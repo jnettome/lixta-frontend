@@ -77,3 +77,9 @@ Requires **`Authorization`**. Returns a **JSON array** of workspaces (`id`, `nam
 **Body:** `{ "workspace": { "name": string } }`
 
 Requires **`Authorization`**. Creates a workspace for the current user. **201** response uses the same shape as **`GET /workspaces/:id`** (show), including `slug` for deep links elsewhere.
+
+## Troubleshooting (401 right after login)
+
+The API uses **otp-jwt**’s `User.from_jwt`, which treats a past **`users.expire_jwt_at`** (set by **`POST /logout`**) as “session revoked”: `from_jwt` returns **nil** even if the JWT verifies, so **`GET /me`** returns **401**.
+
+Successful **`POST /login`** must **clear `expire_jwt_at`** (e.g. set to `nil`) before returning a new token; otherwise the next authenticated call always fails until that column is cleared.
