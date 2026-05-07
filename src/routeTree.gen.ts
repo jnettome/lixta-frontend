@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedInboxRouteImport } from './routes/_authenticated/inbox'
-import { Route as AuthenticatedInboxIndexRouteImport } from './routes/_authenticated/inbox/index'
-import { Route as AuthenticatedInboxSignalIdRouteImport } from './routes/_authenticated/inbox/$signalId'
+import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedSignalsIndexRouteImport } from './routes/_authenticated/signals/index'
+import { Route as AuthenticatedSignalsSignalIdRouteImport } from './routes/_authenticated/signals/$signalId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -30,58 +32,90 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedInboxRoute = AuthenticatedInboxRouteImport.update({
-  id: '/inbox',
-  path: '/inbox',
+const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedInboxIndexRoute = AuthenticatedInboxIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedInboxRoute,
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedInboxSignalIdRoute =
-  AuthenticatedInboxSignalIdRouteImport.update({
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSignalsIndexRoute =
+  AuthenticatedSignalsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSignalsRoute,
+  } as any)
+const AuthenticatedSignalsSignalIdRoute =
+  AuthenticatedSignalsSignalIdRouteImport.update({
     id: '/$signalId',
     path: '/$signalId',
-    getParentRoute: () => AuthenticatedInboxRoute,
+    getParentRoute: () => AuthenticatedSignalsRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/inbox': typeof AuthenticatedInboxRouteWithChildren
-  '/inbox/$signalId': typeof AuthenticatedInboxSignalIdRoute
-  '/inbox/': typeof AuthenticatedInboxIndexRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/signals': typeof AuthenticatedSignalsRouteWithChildren
+  '/signals/$signalId': typeof AuthenticatedSignalsSignalIdRoute
+  '/signals/': typeof AuthenticatedSignalsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/inbox/$signalId': typeof AuthenticatedInboxSignalIdRoute
-  '/inbox': typeof AuthenticatedInboxIndexRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/signals/$signalId': typeof AuthenticatedSignalsSignalIdRoute
+  '/signals': typeof AuthenticatedSignalsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/inbox': typeof AuthenticatedInboxRouteWithChildren
-  '/_authenticated/inbox/$signalId': typeof AuthenticatedInboxSignalIdRoute
-  '/_authenticated/inbox/': typeof AuthenticatedInboxIndexRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/signals': typeof AuthenticatedSignalsRouteWithChildren
+  '/_authenticated/signals/$signalId': typeof AuthenticatedSignalsSignalIdRoute
+  '/_authenticated/signals/': typeof AuthenticatedSignalsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/inbox' | '/inbox/$signalId' | '/inbox/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/account'
+    | '/dashboard'
+    | '/signals'
+    | '/signals/$signalId'
+    | '/signals/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/inbox/$signalId' | '/inbox'
+  to:
+    | '/'
+    | '/login'
+    | '/account'
+    | '/dashboard'
+    | '/signals/$signalId'
+    | '/signals'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
-    | '/_authenticated/inbox'
-    | '/_authenticated/inbox/$signalId'
-    | '/_authenticated/inbox/'
+    | '/_authenticated/account'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/signals'
+    | '/_authenticated/signals/$signalId'
+    | '/_authenticated/signals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,49 +147,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/inbox': {
-      id: '/_authenticated/inbox'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof AuthenticatedInboxRouteImport
+    '/_authenticated/signals': {
+      id: '/_authenticated/signals'
+      path: '/signals'
+      fullPath: '/signals'
+      preLoaderRoute: typeof AuthenticatedSignalsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/inbox/': {
-      id: '/_authenticated/inbox/'
-      path: '/'
-      fullPath: '/inbox/'
-      preLoaderRoute: typeof AuthenticatedInboxIndexRouteImport
-      parentRoute: typeof AuthenticatedInboxRoute
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/inbox/$signalId': {
-      id: '/_authenticated/inbox/$signalId'
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/signals/': {
+      id: '/_authenticated/signals/'
+      path: '/'
+      fullPath: '/signals/'
+      preLoaderRoute: typeof AuthenticatedSignalsIndexRouteImport
+      parentRoute: typeof AuthenticatedSignalsRoute
+    }
+    '/_authenticated/signals/$signalId': {
+      id: '/_authenticated/signals/$signalId'
       path: '/$signalId'
-      fullPath: '/inbox/$signalId'
-      preLoaderRoute: typeof AuthenticatedInboxSignalIdRouteImport
-      parentRoute: typeof AuthenticatedInboxRoute
+      fullPath: '/signals/$signalId'
+      preLoaderRoute: typeof AuthenticatedSignalsSignalIdRouteImport
+      parentRoute: typeof AuthenticatedSignalsRoute
     }
   }
 }
 
-interface AuthenticatedInboxRouteChildren {
-  AuthenticatedInboxSignalIdRoute: typeof AuthenticatedInboxSignalIdRoute
-  AuthenticatedInboxIndexRoute: typeof AuthenticatedInboxIndexRoute
+interface AuthenticatedSignalsRouteChildren {
+  AuthenticatedSignalsSignalIdRoute: typeof AuthenticatedSignalsSignalIdRoute
+  AuthenticatedSignalsIndexRoute: typeof AuthenticatedSignalsIndexRoute
 }
 
-const AuthenticatedInboxRouteChildren: AuthenticatedInboxRouteChildren = {
-  AuthenticatedInboxSignalIdRoute: AuthenticatedInboxSignalIdRoute,
-  AuthenticatedInboxIndexRoute: AuthenticatedInboxIndexRoute,
+const AuthenticatedSignalsRouteChildren: AuthenticatedSignalsRouteChildren = {
+  AuthenticatedSignalsSignalIdRoute: AuthenticatedSignalsSignalIdRoute,
+  AuthenticatedSignalsIndexRoute: AuthenticatedSignalsIndexRoute,
 }
 
-const AuthenticatedInboxRouteWithChildren =
-  AuthenticatedInboxRoute._addFileChildren(AuthenticatedInboxRouteChildren)
+const AuthenticatedSignalsRouteWithChildren =
+  AuthenticatedSignalsRoute._addFileChildren(AuthenticatedSignalsRouteChildren)
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedInboxRoute: typeof AuthenticatedInboxRouteWithChildren
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedInboxRoute: AuthenticatedInboxRouteWithChildren,
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedSignalsRoute: AuthenticatedSignalsRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

@@ -1,8 +1,32 @@
-const STORAGE_KEY = 'signals-demo-session-v1'
+const STORAGE_KEY = 'lixta-auth-v1'
 
-export type DemoSession = {
+export type ApiUser = {
+  id: number
   email: string
-  name: string
+  name: string | null
+  avatar_url: string | null
+  cellphone: string | null
+  created_at?: string
+  updated_at?: string
+  username?: string | null
+}
+
+export type AuthSession = {
+  token: string
+  user: ApiUser
+}
+
+let listeners: Array<() => void> = []
+
+export function subscribeSession(cb: () => void): () => void {
+  listeners.push(cb)
+  return () => {
+    listeners = listeners.filter((l) => l !== cb)
+  }
+}
+
+export function emitSessionChange(): void {
+  for (const l of listeners) l()
 }
 
 function readRaw(): string | null {
@@ -14,26 +38,45 @@ function readRaw(): string | null {
 }
 
 let cachedRaw: string | null | undefined
-let cachedSession: DemoSession | null | undefined
+let cachedSession: AuthSession | null | undefined
 
-function invalidateSessionCache() {
+function invalidateSessionCache(): void {
   cachedRaw = undefined
   cachedSession = undefined
 }
 
-function parseSession(raw: string | null): DemoSession | null {
+function parseSession(raw: string | null): AuthSession | null {
   if (!raw) return null
   try {
     const v = JSON.parse(raw) as unknown
     if (
       v &&
       typeof v === 'object' &&
-      'email' in v &&
-      typeof (v as { email: unknown }).email === 'string' &&
-      'name' in v &&
-      typeof (v as { name: unknown }).name === 'string'
+      'token' in v &&
+      typeof (v as { token: unknown }).token === 'string' &&
+      'user' in v &&
+      typeof (v as { user: unknown }).user === 'object' &&
+      (v as { user: unknown }).user !== null
     ) {
-      return { email: (v as DemoSession).email, name: (v as DemoSession).name }
+      const user = (v as AuthSession).user
+      if (
+        typeof user.id === 'number' &&
+        typeof user.email === 'string'
+      ) {
+        return {
+          token: (v as AuthSession).token,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name ?? null,
+            avatar_url: user.avatar_url ?? null,
+            cellphone: user.cellphone ?? null,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+            username: user.username ?? null,
+          },
+        }
+      }
     }
   } catch {
     /* ignore */
@@ -45,7 +88,7 @@ function parseSession(raw: string | null): DemoSession | null {
  * Stable reference for the current stored session while storage is unchanged.
  * Required for useSyncExternalStore — JSON.parse would otherwise return a new object every read.
  */
-export function getSessionSnapshot(): DemoSession | null {
+export function getSessionSnapshot(): AuthSession | null {
   const raw = readRaw()
   if (raw === cachedRaw) return cachedSession ?? null
   cachedRaw = raw
@@ -53,30 +96,35 @@ export function getSessionSnapshot(): DemoSession | null {
   return cachedSession
 }
 
-export function getSession(): DemoSession | null {
+export function getSession(): AuthSession | null {
   return getSessionSnapshot()
 }
 
-export function signIn(email: string, password: string): DemoSession {
-  void email
-  void password
-  const session: DemoSession = {
-    email: 'you@posthog.app',
-    name: 'Signals Operator',
-  }
+export function getToken(): string | null {
+  return getSession()?.token ?? null
+}
+
+export function setSession(session: AuthSession): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
   invalidateSessionCache()
-  return session
+  emitSessionChange()
 }
 
-export function signOut(): void {
-  localStorage.removeItem(STORAGE_KEY)
+export function updateStoredUser(partial: Partial<ApiUser>): void {
+  const cur = getSessionSnapshot()
+  if (!cur) return
+  setSession({
+    token: cur.token,
+    user: { ...cur.user, ...partial },
+  })
+}
+
+export function clearAuthSession(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    /* ignore */
+  }
   invalidateSessionCache()
+  emitSessionChange()
 }
-
-/*
- * Clerk / Auth.js seam:
- * - Wrap the app with <ClerkProvider> (or SessionProvider) in src/routes/__root.tsx instead of/in addition to AuthProvider.
- * - Replace getSession() with Clerk's useAuth().isSignedIn + user, or Auth.js getServerSession on SSR routes.
- * - In _authenticated.tsx beforeLoad, call Clerk's auth() helper or redirect() when unauthenticated.
- */

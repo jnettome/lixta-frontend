@@ -3,7 +3,7 @@ import { getSession } from '@/auth/session'
 
 export const Route = createFileRoute('/')({
   beforeLoad: () => {
-    if (getSession()) throw redirect({ to: '/inbox', search: { view: 'split' } })
+    if (getSession()?.token) throw redirect({ to: '/dashboard' })
     throw redirect({ to: '/login' })
   },
   component: () => null,

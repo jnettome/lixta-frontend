@@ -65,12 +65,12 @@ export function InboxList({ selectedId, collapsed, view }: InboxListProps) {
   return (
     <section
       className={cn(
-        'flex min-h-0 min-w-0 flex-col border-r border-border bg-surface-0',
-        collapsed && 'pointer-events-none border-transparent',
+        'flex min-h-0 min-w-0 flex-col bg-surface-0',
+        collapsed && 'pointer-events-none',
       )}
       aria-hidden={collapsed}
     >
-      <header className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+      <header className="flex shrink-0 items-center justify-between border-b border-border px-3 py-3 sm:px-4">
         <h1 className="text-sm font-semibold tracking-tight text-fg">Inbox</h1>
         <button
           type="button"
@@ -81,7 +81,7 @@ export function InboxList({ selectedId, collapsed, view }: InboxListProps) {
         </button>
       </header>
 
-      <div className="shrink-0 border-b border-border px-4 py-3">
+      <div className="shrink-0 border-b border-border px-3 py-3 sm:px-4">
         <p className="text-xs text-muted">
           Signals <span className="font-semibold text-fg">({allSignals.length})</span>
         </p>
@@ -134,11 +134,11 @@ function SignalRow({
   return (
     <li>
       <Link
-        to="/inbox/$signalId"
+        to="/signals/$signalId"
         params={{ signalId: signal.id }}
         search={listSearch}
         className={cn(
-          'block px-3 py-3 text-left outline-none transition',
+          'block px-3 py-3.5 text-left outline-none transition sm:py-3 active:bg-surface-2/80',
           active ? 'bg-surface-2 ring-1 ring-inset ring-nav-active/35' : 'hover:bg-surface-1',
         )}
       >

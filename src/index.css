@@ -30,6 +30,11 @@
     height: 100%;
   }
 
+  /* Avoid transient horizontal scrollbar from transforms during route transitions */
+  #root {
+    overflow-x: clip;
+  }
+
   body {
     @apply bg-surface-0 text-fg font-sans antialiased;
     font-feature-settings:

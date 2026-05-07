@@ -3,7 +3,7 @@ import { getSession } from '@/auth/session'
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: () => {
-    if (!getSession()) throw redirect({ to: '/login' })
+    if (!getSession()?.token) throw redirect({ to: '/login' })
   },
   component: () => <Outlet />,
 })

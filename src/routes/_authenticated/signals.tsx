@@ -2,11 +2,11 @@ import { createFileRoute, useNavigate, useRouterState } from '@tanstack/react-ro
 import { z } from 'zod'
 import { InboxShell } from '@/components/shell/InboxShell'
 
-const inboxSearchSchema = z.object({
+const signalsSearchSchema = z.object({
   view: z.enum(['split', 'full']).optional(),
 })
 
-export type InboxSearch = {
+export type SignalsSearch = {
   view?: 'split' | 'full'
 }
 
@@ -20,24 +20,24 @@ function readViewPref(): 'split' | 'full' {
   }
 }
 
-export const Route = createFileRoute('/_authenticated/inbox')({
-  validateSearch: (raw): InboxSearch => {
-    const parsed = inboxSearchSchema.safeParse(raw)
+export const Route = createFileRoute('/_authenticated/signals')({
+  validateSearch: (raw): SignalsSearch => {
+    const parsed = signalsSearchSchema.safeParse(raw)
     if (!parsed.success) return {}
     if (parsed.data.view === 'full' || parsed.data.view === 'split') {
       return { view: parsed.data.view }
     }
     return {}
   },
-  component: InboxRouteLayout,
+  component: SignalsRouteLayout,
 })
 
-function InboxRouteLayout() {
+function SignalsRouteLayout() {
   const navigate = useNavigate()
   const search = Route.useSearch()
   const view = search.view ?? readViewPref()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const signalMatch = /^\/inbox\/([^/]+)\/?$/.exec(pathname)
+  const signalMatch = /^\/signals\/([^/]+)\/?$/.exec(pathname)
   const signalId = signalMatch?.[1]
 
   const setView = (view: 'split' | 'full') => {
@@ -48,14 +48,14 @@ function InboxRouteLayout() {
     }
     if (signalId) {
       void navigate({
-        to: '/inbox/$signalId',
+        to: '/signals/$signalId',
         params: { signalId },
         search: { view },
         replace: true,
       })
     } else {
       void navigate({
-        to: '/inbox',
+        to: '/signals',
         search: { view },
         replace: true,
       })

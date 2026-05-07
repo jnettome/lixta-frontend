@@ -21,11 +21,11 @@ export function SignalDetail({ signalId }: SignalDetailProps) {
       <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
         <p className="text-sm text-muted">Signal not found.</p>
         <Link
-          to="/inbox"
+          to="/signals"
           search={inboxSearch}
           className="text-sm font-medium text-nav-active hover:underline"
         >
-          Back to inbox
+          Back to signals
         </Link>
       </div>
     )
@@ -33,29 +33,29 @@ export function SignalDetail({ signalId }: SignalDetailProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-surface-1">
-      <header className="flex shrink-0 flex-wrap items-start gap-3 border-b border-border px-5 py-4">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold leading-snug tracking-tight text-fg">
+      <header className="flex shrink-0 flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:flex-wrap sm:items-start sm:px-5 sm:py-4">
+        <div className="min-w-0 flex-1 lg:pr-2">
+          <h2 className="text-[15px] font-semibold leading-snug tracking-tight text-fg sm:text-base">
             {signal.title}
           </h2>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-1 sm:justify-end">
           <button
             type="button"
-            className="rounded-md border border-border bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg transition hover:bg-surface-3"
+            className="rounded-md border border-border bg-surface-2 px-3 py-2 text-xs font-medium text-fg transition hover:bg-surface-3 sm:py-1.5"
           >
             Create task
           </button>
           <button
             type="button"
             disabled
-            className="rounded-md border border-transparent px-3 py-1.5 text-xs font-medium text-muted opacity-60"
+            className="rounded-md border border-transparent px-3 py-2 text-xs font-medium text-muted opacity-60 sm:py-1.5"
           >
             Run cloud
           </button>
           <button
             type="button"
-            className="rounded-md p-1.5 text-muted transition hover:bg-surface-2 hover:text-fg"
+            className="hidden rounded-md p-1.5 text-muted transition hover:bg-surface-2 hover:text-fg lg:inline-flex"
             aria-label={view === 'full' ? 'Exit full view' : 'Open full view'}
             onClick={() => onViewChange(view === 'full' ? 'split' : 'full')}
           >
@@ -67,16 +67,16 @@ export function SignalDetail({ signalId }: SignalDetailProps) {
           </button>
           <button
             type="button"
-            className="rounded-md p-1.5 text-muted transition hover:bg-surface-2 hover:text-fg"
+            className="hidden rounded-md p-1.5 text-muted transition hover:bg-surface-2 hover:text-fg lg:inline-flex"
             aria-label="Close detail"
-            onClick={() => void navigate({ to: '/inbox', search: { view: inboxSearch.view } })}
+            onClick={() => void navigate({ to: '/signals', search: { view: inboxSearch.view } })}
           >
             <X className="size-4" />
           </button>
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
         <p className="text-sm text-muted">
           {signal.status === 'RUNNING'
             ? 'Research is still running on this signal. Check back shortly or create a task to track follow-up.'
