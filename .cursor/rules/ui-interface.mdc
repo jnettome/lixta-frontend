@@ -1,0 +1,52 @@
+---
+description: UI and interface conventions — layout, tokens, motion, responsive shell
+globs: src/**/*.{tsx,css}
+alwaysApply: false
+---
+
+# Interface standards (LIXTA / lixta2)
+
+## Mobile-first and breakpoint
+
+- Default styles target **small screens** first; introduce the full desktop shell at **`lg:` (1024px)** unless a feature explicitly needs `md:`.
+- Below `lg`, prefer **stacked flows** (e.g. list full screen → detail full screen) with a **top chrome** (menu / back) instead of cramming multiple panes.
+- At `lg+`, preserve **multi-pane** layouts (sidebar + list + detail) and desktop-only controls (e.g. expand / close in detail header).
+
+## Design tokens (Tailwind v4)
+
+- Extend the palette in [`src/index.css`](src/index.css) via `@theme` using **semantic names**: `surface-0` … `surface-3`, `border`, `muted`, `fg`, `nav-active`, `nav-active-fg`, accent colors.
+- In components, use those tokens (`bg-surface-1`, `text-muted`, `ring-nav-active/40`, etc.). Avoid raw hex in JSX unless it is a deliberate one-off (e.g. decorative dots).
+- Keep **`color-scheme: dark`** and body defaults in `@layer base`; app shell reads as a single dark product surface.
+
+## Layout and scrolling
+
+- Use **`min-h-0` + `min-w-0`** on flex/grid children that scroll; pair **`flex-1`** with **`overflow-y-auto`** (or `min-h-0` on the scroll container) so nested panes scroll instead of the page growing unbounded.
+- Panels that animate with **horizontal `transform`** (`translateX`) must have **`overflow-x-hidden`** (or parent clipping) so the viewport does not flash a horizontal scrollbar.
+- Keep **`#root { overflow-x: clip; }`** unless a screen truly needs horizontal document scroll.
+
+## Motion (Framer Motion)
+
+- Use motion for **meaningful** transitions (pane enter/exit, drawer), not micro-jank on every hover.
+- Always gate distance/duration with **`useReducedMotion()`** — use `0` offset/duration when reduced motion is preferred.
+- Prefer **vertical** motion on mobile stacked views and **horizontal** on desktop panes when it matches the spatial model.
+
+## Accessibility and primitives
+
+- Use **Radix** primitives for overlays, menus, and disclosure (`Dialog`, `DropdownMenu`, `Collapsible`): focus trap, `aria` labels, **`sr-only` titles** on dialogs.
+- Interactive rows/links need visible **focus** styles (e.g. `outline-none` only when paired with `ring-*` or clear focus-visible styling).
+- **`viewport-fit=cover`** and **`env(safe-area-inset-*)`** on fixed/mobile chrome (headers, drawer footers, full-screen flows) so notched devices stay usable.
+
+## Touch and density
+
+- On **drawer / mobile nav**, favor **comfortable tap targets** (`min-h-10` / `min-h-11` where appropriate) and **`overscroll-contain`** on long nav lists.
+- Use slightly **tighter horizontal padding** on narrow screens (`px-3` → `sm:px-4` / `lg:px-5`) rather than identical padding at all breakpoints.
+
+## Routing and chrome state
+
+- Prefer **URL state** for shareable layout (e.g. search params) when it matches user expectations; **localStorage** only for **defaults** or **persistence** that should not rewrite history on every load.
+- **Chrome context** (e.g. split vs full, callbacks) lives in small React contexts colocated with the shell; keep route components thin.
+
+## Conditionals and classes
+
+- Use **`cn()`** from [`src/lib/utils.ts`](src/lib/utils.ts) for conditional Tailwind classes.
+- When hiding desktop-only actions on mobile, use **`max-lg:` / `lg:`** explicitly so behavior is obvious in the markup.

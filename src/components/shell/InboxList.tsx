@@ -83,7 +83,7 @@ export function InboxList({ selectedId, collapsed, view }: InboxListProps) {
 
       <div className="shrink-0 border-b border-border px-3 py-3 sm:px-4">
         <p className="text-xs text-muted">
-          Signals <span className="font-semibold text-fg">({allSignals.length})</span>
+          Signal feed <span className="font-semibold text-fg">({allSignals.length})</span>
         </p>
         <p className="mt-0.5 text-[11px] text-muted">
           <span className="text-accent-green">{ready} ready</span>

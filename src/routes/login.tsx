@@ -73,7 +73,7 @@ function LoginPage() {
           'w-full max-w-sm rounded-lg border border-border bg-surface-1 p-8 shadow-xl',
         )}
       >
-        <h1 className="text-lg font-semibold tracking-tight text-fg">Signals</h1>
+        <h1 className="text-lg font-semibold tracking-tight text-fg">LIXTA</h1>
         <p className="mt-1 text-sm text-muted">
           Sign in with email. We will send a one-time code to your inbox.
         </p>

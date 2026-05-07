@@ -93,7 +93,7 @@ export function SignalDetail({ signalId }: SignalDetailProps) {
         </div>
 
         <div className="mt-6">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">Signals</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">LIXTA</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {signal.tags.map((t) => (
               <code

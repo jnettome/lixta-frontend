@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { LayoutDashboard, Plus, Radio, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/auth/AuthContext'
+import { WorkspaceListSkeleton } from '@/components/ui/Skeleton'
 import { cn } from '@/lib/utils'
 import { createWorkspace, listWorkspaces, type Workspace } from '@/services/workspaces-api'
 
@@ -103,8 +104,8 @@ function DashboardPage() {
               {displayName}
             </h1>
             <p className="max-w-xl text-sm text-muted">
-              Your workspaces and signals in one place. Open Signals for the feed or manage
-              workspaces here.
+              Your workspaces and signal feed in one place. Open Signals for the inbox-style feed,
+              or manage workspaces here.
             </p>
           </header>
           <nav className="flex shrink-0 items-center gap-3 text-sm">
@@ -238,7 +239,7 @@ function DashboardPage() {
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted">Loading workspaces…</p>
+            <WorkspaceListSkeleton />
           ) : loadError ? (
             <p className="text-sm text-red-500">{loadError}</p>
           ) : workspaces.length === 0 ? (

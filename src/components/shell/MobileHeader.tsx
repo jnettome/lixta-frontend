@@ -49,7 +49,7 @@ export function MobileHeader({
           {signalId ? detailTitle ?? 'Signal' : 'Inbox'}
         </h1>
         {!signalId ? (
-          <p className="truncate text-[11px] text-muted">Signals workspace</p>
+          <p className="truncate text-[11px] text-muted">LIXTA</p>
         ) : null}
       </div>
     </header>

@@ -75,7 +75,7 @@ export function SidebarNav({
         </div>
       ) : (
         <div className="shrink-0 border-b border-border px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Signals</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">LIXTA</p>
           <p className="text-sm font-medium text-fg">Workspace</p>
         </div>
       )}

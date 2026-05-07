@@ -1,0 +1,25 @@
+---
+description: Loading and skeleton UI patterns for async data (lists, dashboards)
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# Loading states and skeletons
+
+## Prefer skeletons for structured content
+
+- For **lists, cards, tables, and dashboards**, use **skeleton placeholders** that mirror the **final layout** (same grid, spacing, border radius, and approximate heights) instead of a generic spinner-only state.
+- Use existing design tokens: `bg-surface-*`, `border-border`, `rounded-xl` (or match the real component), and **`animate-pulse`** on skeleton blocks (see [`src/components/ui/Skeleton.tsx`](src/components/ui/Skeleton.tsx)).
+
+## Accessibility
+
+- Mark the loading region with **`aria-busy="true"`** while fetching, and **`aria-live="polite"`** when content will replace the skeleton.
+- Provide an **`aria-label`** (e.g. “Loading workspaces”) on the skeleton container so screen readers announce purpose.
+
+## Scope loading UI
+
+- Avoid replacing the **entire page** with a spinner if headers or static chrome can stay visible; skeleton only the **async section** (e.g. workspace grid on the dashboard).
+
+## Revalidation
+
+- After **create/update** actions, a **short refetch** may use a lighter pattern (inline spinner on the button, or optimistic UI) so the full skeleton does not flash unless the list was empty or a hard reload is intended.

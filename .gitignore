@@ -12,8 +12,9 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
-.cursor
+# Editor directories and files (keep shared Cursor rules)
+.cursor/*
+!.cursor/rules/
 .vscode/*
 !.vscode/extensions.json
 .idea
