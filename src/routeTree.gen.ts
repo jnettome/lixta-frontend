@@ -16,7 +16,13 @@ import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedSignalsIndexRouteImport } from './routes/_authenticated/signals/index'
+import { Route as AuthenticatedWorkspacesWorkspaceSlugRouteImport } from './routes/_authenticated/workspaces/$workspaceSlug'
 import { Route as AuthenticatedSignalsSignalIdRouteImport } from './routes/_authenticated/signals/$signalId'
+import { Route as AuthenticatedWorkspacesWorkspaceSlugIndexRouteImport } from './routes/_authenticated/workspaces/$workspaceSlug/index'
+import { Route as AuthenticatedWorkspacesWorkspaceSlugUsersRouteImport } from './routes/_authenticated/workspaces/$workspaceSlug/users'
+import { Route as AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteImport } from './routes/_authenticated/workspaces/$workspaceSlug/boards/$boardId/route'
+import { Route as AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRouteImport } from './routes/_authenticated/workspaces/$workspaceSlug/boards/$boardId/index'
+import { Route as AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRouteImport } from './routes/_authenticated/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -53,12 +59,52 @@ const AuthenticatedSignalsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSignalsRoute,
   } as any)
+const AuthenticatedWorkspacesWorkspaceSlugRoute =
+  AuthenticatedWorkspacesWorkspaceSlugRouteImport.update({
+    id: '/workspaces/$workspaceSlug',
+    path: '/workspaces/$workspaceSlug',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSignalsSignalIdRoute =
   AuthenticatedSignalsSignalIdRouteImport.update({
     id: '/$signalId',
     path: '/$signalId',
     getParentRoute: () => AuthenticatedSignalsRoute,
   } as any)
+const AuthenticatedWorkspacesWorkspaceSlugIndexRoute =
+  AuthenticatedWorkspacesWorkspaceSlugIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedWorkspacesWorkspaceSlugRoute,
+  } as any)
+const AuthenticatedWorkspacesWorkspaceSlugUsersRoute =
+  AuthenticatedWorkspacesWorkspaceSlugUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthenticatedWorkspacesWorkspaceSlugRoute,
+  } as any)
+const AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute =
+  AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteImport.update({
+    id: '/boards/$boardId',
+    path: '/boards/$boardId',
+    getParentRoute: () => AuthenticatedWorkspacesWorkspaceSlugRoute,
+  } as any)
+const AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute =
+  AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () =>
+      AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute,
+  } as any)
+const AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute =
+  AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRouteImport.update(
+    {
+      id: '/tasks/$taskId',
+      path: '/tasks/$taskId',
+      getParentRoute: () =>
+        AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,7 +113,13 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/signals': typeof AuthenticatedSignalsRouteWithChildren
   '/signals/$signalId': typeof AuthenticatedSignalsSignalIdRoute
+  '/workspaces/$workspaceSlug': typeof AuthenticatedWorkspacesWorkspaceSlugRouteWithChildren
   '/signals/': typeof AuthenticatedSignalsIndexRoute
+  '/workspaces/$workspaceSlug/users': typeof AuthenticatedWorkspacesWorkspaceSlugUsersRoute
+  '/workspaces/$workspaceSlug/': typeof AuthenticatedWorkspacesWorkspaceSlugIndexRoute
+  '/workspaces/$workspaceSlug/boards/$boardId': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteWithChildren
+  '/workspaces/$workspaceSlug/boards/$boardId/': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute
+  '/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,6 +128,10 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/signals/$signalId': typeof AuthenticatedSignalsSignalIdRoute
   '/signals': typeof AuthenticatedSignalsIndexRoute
+  '/workspaces/$workspaceSlug/users': typeof AuthenticatedWorkspacesWorkspaceSlugUsersRoute
+  '/workspaces/$workspaceSlug': typeof AuthenticatedWorkspacesWorkspaceSlugIndexRoute
+  '/workspaces/$workspaceSlug/boards/$boardId': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute
+  '/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,7 +142,13 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/signals': typeof AuthenticatedSignalsRouteWithChildren
   '/_authenticated/signals/$signalId': typeof AuthenticatedSignalsSignalIdRoute
+  '/_authenticated/workspaces/$workspaceSlug': typeof AuthenticatedWorkspacesWorkspaceSlugRouteWithChildren
   '/_authenticated/signals/': typeof AuthenticatedSignalsIndexRoute
+  '/_authenticated/workspaces/$workspaceSlug/users': typeof AuthenticatedWorkspacesWorkspaceSlugUsersRoute
+  '/_authenticated/workspaces/$workspaceSlug/': typeof AuthenticatedWorkspacesWorkspaceSlugIndexRoute
+  '/_authenticated/workspaces/$workspaceSlug/boards/$boardId': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteWithChildren
+  '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute
+  '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId': typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -97,7 +159,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signals'
     | '/signals/$signalId'
+    | '/workspaces/$workspaceSlug'
     | '/signals/'
+    | '/workspaces/$workspaceSlug/users'
+    | '/workspaces/$workspaceSlug/'
+    | '/workspaces/$workspaceSlug/boards/$boardId'
+    | '/workspaces/$workspaceSlug/boards/$boardId/'
+    | '/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -106,6 +174,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/signals/$signalId'
     | '/signals'
+    | '/workspaces/$workspaceSlug/users'
+    | '/workspaces/$workspaceSlug'
+    | '/workspaces/$workspaceSlug/boards/$boardId'
+    | '/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId'
   id:
     | '__root__'
     | '/'
@@ -115,7 +187,13 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/signals'
     | '/_authenticated/signals/$signalId'
+    | '/_authenticated/workspaces/$workspaceSlug'
     | '/_authenticated/signals/'
+    | '/_authenticated/workspaces/$workspaceSlug/users'
+    | '/_authenticated/workspaces/$workspaceSlug/'
+    | '/_authenticated/workspaces/$workspaceSlug/boards/$boardId'
+    | '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/'
+    | '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -175,12 +253,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSignalsIndexRouteImport
       parentRoute: typeof AuthenticatedSignalsRoute
     }
+    '/_authenticated/workspaces/$workspaceSlug': {
+      id: '/_authenticated/workspaces/$workspaceSlug'
+      path: '/workspaces/$workspaceSlug'
+      fullPath: '/workspaces/$workspaceSlug'
+      preLoaderRoute: typeof AuthenticatedWorkspacesWorkspaceSlugRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/signals/$signalId': {
       id: '/_authenticated/signals/$signalId'
       path: '/$signalId'
       fullPath: '/signals/$signalId'
       preLoaderRoute: typeof AuthenticatedSignalsSignalIdRouteImport
       parentRoute: typeof AuthenticatedSignalsRoute
+    }
+    '/_authenticated/workspaces/$workspaceSlug/': {
+      id: '/_authenticated/workspaces/$workspaceSlug/'
+      path: '/'
+      fullPath: '/workspaces/$workspaceSlug/'
+      preLoaderRoute: typeof AuthenticatedWorkspacesWorkspaceSlugIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspacesWorkspaceSlugRoute
+    }
+    '/_authenticated/workspaces/$workspaceSlug/users': {
+      id: '/_authenticated/workspaces/$workspaceSlug/users'
+      path: '/users'
+      fullPath: '/workspaces/$workspaceSlug/users'
+      preLoaderRoute: typeof AuthenticatedWorkspacesWorkspaceSlugUsersRouteImport
+      parentRoute: typeof AuthenticatedWorkspacesWorkspaceSlugRoute
+    }
+    '/_authenticated/workspaces/$workspaceSlug/boards/$boardId': {
+      id: '/_authenticated/workspaces/$workspaceSlug/boards/$boardId'
+      path: '/boards/$boardId'
+      fullPath: '/workspaces/$workspaceSlug/boards/$boardId'
+      preLoaderRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteImport
+      parentRoute: typeof AuthenticatedWorkspacesWorkspaceSlugRoute
+    }
+    '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/': {
+      id: '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/'
+      path: '/'
+      fullPath: '/workspaces/$workspaceSlug/boards/$boardId/'
+      preLoaderRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRouteImport
+      parentRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute
+    }
+    '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId': {
+      id: '/_authenticated/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId'
+      path: '/tasks/$taskId'
+      fullPath: '/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId'
+      preLoaderRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRouteImport
+      parentRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute
     }
   }
 }
@@ -198,16 +318,58 @@ const AuthenticatedSignalsRouteChildren: AuthenticatedSignalsRouteChildren = {
 const AuthenticatedSignalsRouteWithChildren =
   AuthenticatedSignalsRoute._addFileChildren(AuthenticatedSignalsRouteChildren)
 
+interface AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteChildren {
+  AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute
+  AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute
+}
+
+const AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteChildren: AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteChildren =
+  {
+    AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute:
+      AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdIndexRoute,
+    AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute:
+      AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdTasksTaskIdRoute,
+  }
+
+const AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteWithChildren =
+  AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute._addFileChildren(
+    AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteChildren,
+  )
+
+interface AuthenticatedWorkspacesWorkspaceSlugRouteChildren {
+  AuthenticatedWorkspacesWorkspaceSlugUsersRoute: typeof AuthenticatedWorkspacesWorkspaceSlugUsersRoute
+  AuthenticatedWorkspacesWorkspaceSlugIndexRoute: typeof AuthenticatedWorkspacesWorkspaceSlugIndexRoute
+  AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute: typeof AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteWithChildren
+}
+
+const AuthenticatedWorkspacesWorkspaceSlugRouteChildren: AuthenticatedWorkspacesWorkspaceSlugRouteChildren =
+  {
+    AuthenticatedWorkspacesWorkspaceSlugUsersRoute:
+      AuthenticatedWorkspacesWorkspaceSlugUsersRoute,
+    AuthenticatedWorkspacesWorkspaceSlugIndexRoute:
+      AuthenticatedWorkspacesWorkspaceSlugIndexRoute,
+    AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRoute:
+      AuthenticatedWorkspacesWorkspaceSlugBoardsBoardIdRouteRouteWithChildren,
+  }
+
+const AuthenticatedWorkspacesWorkspaceSlugRouteWithChildren =
+  AuthenticatedWorkspacesWorkspaceSlugRoute._addFileChildren(
+    AuthenticatedWorkspacesWorkspaceSlugRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRouteWithChildren
+  AuthenticatedWorkspacesWorkspaceSlugRoute: typeof AuthenticatedWorkspacesWorkspaceSlugRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSignalsRoute: AuthenticatedSignalsRouteWithChildren,
+  AuthenticatedWorkspacesWorkspaceSlugRoute:
+    AuthenticatedWorkspacesWorkspaceSlugRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

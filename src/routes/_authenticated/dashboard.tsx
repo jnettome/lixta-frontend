@@ -269,30 +269,36 @@ function DashboardPage() {
                 const boards = (ws.boards ?? []).filter((b) => !b.archived)
                 return (
                   <li key={ws.id}>
-                    <article className="flex h-full flex-col rounded-xl border border-border bg-surface-1 p-5 shadow-sm transition hover:border-nav-active/30 hover:shadow-md">
-                      <h3 className="font-semibold text-fg">{ws.name}</h3>
-                      <p className="mt-0.5 font-mono text-xs text-muted">/{ws.slug}</p>
-                      {ws.description ? (
-                        <p className="mt-2 line-clamp-2 text-sm text-muted">{ws.description}</p>
-                      ) : null}
-                      {boards.length > 0 ? (
-                        <div className="mt-4 flex flex-wrap gap-1.5">
-                          {boards.slice(0, 6).map((b) => (
-                            <span
-                              key={b.id}
-                              className="rounded-md bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted"
-                            >
-                              {b.name?.trim() || 'Board'}
-                            </span>
-                          ))}
-                          {boards.length > 6 ? (
-                            <span className="text-[11px] text-muted">+{boards.length - 6}</span>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <p className="mt-4 text-xs text-muted">No active boards</p>
-                      )}
-                    </article>
+                    <Link
+                      to="/workspaces/$workspaceSlug"
+                      params={{ workspaceSlug: ws.slug }}
+                      className="group block outline-none ring-nav-active/30 focus-visible:ring-2"
+                    >
+                      <article className="flex h-full flex-col rounded-xl border border-border bg-surface-1 p-5 shadow-sm transition group-hover:border-nav-active/35 group-hover:shadow-md">
+                        <h3 className="font-semibold text-fg">{ws.name}</h3>
+                        <p className="mt-0.5 font-mono text-xs text-muted">/{ws.slug}</p>
+                        {ws.description ? (
+                          <p className="mt-2 line-clamp-2 text-sm text-muted">{ws.description}</p>
+                        ) : null}
+                        {boards.length > 0 ? (
+                          <div className="mt-4 flex flex-wrap gap-1.5">
+                            {boards.slice(0, 6).map((b) => (
+                              <span
+                                key={b.id}
+                                className="rounded-md bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted"
+                              >
+                                {b.name?.trim() || 'Board'}
+                              </span>
+                            ))}
+                            {boards.length > 6 ? (
+                              <span className="text-[11px] text-muted">+{boards.length - 6}</span>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <p className="mt-4 text-xs text-muted">No active boards</p>
+                        )}
+                      </article>
+                    </Link>
                   </li>
                 )
               })}

@@ -10,6 +10,25 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 /** Placeholder grid while workspace list is fetching; mirrors real card layout. */
+/** Activity column while workspace feed is loading. */
+export function WorkspaceActivityColumnSkeleton() {
+  return (
+    <div className="space-y-4" aria-busy="true" aria-label="Loading activity">
+      <Skeleton className="h-8 w-full rounded-lg" />
+      {Array.from({ length: 6 }, (_, i) => (
+        <div key={i} className="flex gap-3 rounded-lg border border-border bg-surface-1 p-3">
+          <Skeleton className="size-9 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-3 w-3/4 max-w-[12rem]" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-2 w-16" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export function WorkspaceListSkeleton() {
   return (
     <ul

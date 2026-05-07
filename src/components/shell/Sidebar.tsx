@@ -1,40 +1,149 @@
 import * as Collapsible from '@radix-ui/react-collapsible'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Link, useNavigate } from '@tanstack/react-router'
-import {
-  ChevronDown,
-  ChevronRight,
-  Filter,
-  LayoutDashboard,
-  LayoutGrid,
-  Plus,
-  Radio,
-  Sparkles,
-  TerminalSquare,
-} from 'lucide-react'
-import { useState } from 'react'
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
+import { ChevronDown, ChevronRight, Kanban, LayoutDashboard, LayoutGrid, List, Plus, Radio } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/auth/AuthContext'
 import { cn } from '@/lib/utils'
+
+export type WorkspaceBoardNavItem = {
+  id: number
+  name?: string | null
+  tasks_count?: number
+  archived?: boolean
+}
 
 export type SidebarVariant = 'rail' | 'drawer'
 
 type SidebarNavProps = {
   dashboardActive?: boolean
   signalsActive?: boolean
+  workspacesActive?: boolean
+  /** When set (e.g. workspace layout), show workspace boards in the rail */
+  workspaceSlug?: string
+  workspaceBoards?: WorkspaceBoardNavItem[]
   variant?: SidebarVariant
   className?: string
   onNavigate?: () => void
 }
 
+type BoardNavCollapsibleProps = {
+  board: WorkspaceBoardNavItem
+  workspaceSlug: string
+  activeBoardId: string | undefined
+  boardView: 'list' | 'kanban'
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  isDrawer: boolean
+  afterNav: () => void
+}
+
+function BoardNavCollapsible({
+  board,
+  workspaceSlug,
+  activeBoardId,
+  boardView,
+  open,
+  onOpenChange,
+  isDrawer,
+  afterNav,
+}: BoardNavCollapsibleProps) {
+  const idStr = String(board.id)
+  const title = (board.name ?? 'Board').trim() || 'Board'
+  return (
+    <Collapsible.Root open={open} onOpenChange={onOpenChange}>
+      <Collapsible.Trigger
+        className={cn(
+          'flex w-full items-center gap-1 rounded-md px-1.5 py-1.5 text-left text-xs font-medium text-fg transition hover:bg-surface-2',
+          isDrawer && 'min-h-11',
+        )}
+      >
+        {open ? (
+          <ChevronDown className="size-3.5 shrink-0 text-muted" aria-hidden />
+        ) : (
+          <ChevronRight className="size-3.5 shrink-0 text-muted" aria-hidden />
+        )}
+        <span className="min-w-0 flex-1 truncate text-left">{title}</span>
+        {typeof board.tasks_count === 'number' ? (
+          <span className="shrink-0 tabular-nums text-[10px] text-muted/90">{board.tasks_count}</span>
+        ) : null}
+      </Collapsible.Trigger>
+      <Collapsible.Content className="mt-0.5 space-y-0.5 border-l border-border/70 pl-2 ml-2.5">
+        <Link
+          to="/workspaces/$workspaceSlug/boards/$boardId"
+          params={{ workspaceSlug, boardId: idStr }}
+          search={{ view: 'list' }}
+          onClick={afterNav}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition',
+            isDrawer && 'min-h-10',
+            activeBoardId === idStr && boardView === 'list'
+              ? 'bg-nav-active/20 text-nav-active-fg ring-1 ring-nav-active/35'
+              : 'text-muted hover:bg-surface-2 hover:text-fg',
+          )}
+        >
+          <List className="size-3.5 shrink-0 opacity-90" aria-hidden />
+          List
+        </Link>
+        <Link
+          to="/workspaces/$workspaceSlug/boards/$boardId"
+          params={{ workspaceSlug, boardId: idStr }}
+          search={{ view: 'kanban' }}
+          onClick={afterNav}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition',
+            isDrawer && 'min-h-10',
+            activeBoardId === idStr && boardView === 'kanban'
+              ? 'bg-nav-active/20 text-nav-active-fg ring-1 ring-nav-active/35'
+              : 'text-muted hover:bg-surface-2 hover:text-fg',
+          )}
+        >
+          <Kanban className="size-3.5 shrink-0 opacity-90" aria-hidden />
+          Kanban
+        </Link>
+      </Collapsible.Content>
+    </Collapsible.Root>
+  )
+}
+
 export function SidebarNav({
   dashboardActive = false,
   signalsActive = false,
+  workspacesActive = false,
+  workspaceSlug,
+  workspaceBoards,
   variant = 'rail',
   className,
   onNavigate,
 }: SidebarNavProps) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const searchStr = useRouterState({ select: (s) => s.location.search })
+  const activeBoardId = useMemo(
+    () => /\/workspaces\/[^/]+\/boards\/(\d+)/.exec(pathname)?.[1],
+    [pathname],
+  )
+  const boardView = useMemo(
+    () => (new URLSearchParams(searchStr).get('view') === 'kanban' ? 'kanban' : 'list'),
+    [searchStr],
+  )
+
   const navigate = useNavigate()
   const { session, signOut } = useAuth()
+
+  const boards = workspaceBoards ?? []
+  const activeBoards = useMemo(() => boards.filter((b) => !b.archived), [boards])
+  const archivedBoards = useMemo(() => boards.filter((b) => b.archived), [boards])
+  const showBoardsSection = Boolean(workspaceSlug && boards.length > 0)
+
+  const [openBoardIds, setOpenBoardIds] = useState<Record<string, boolean>>({})
+  const [archivedOpen, setArchivedOpen] = useState(false)
+
+  useEffect(() => {
+    if (!activeBoardId) return
+    setOpenBoardIds((prev) => ({ ...prev, [activeBoardId]: true }))
+    const active = boards.find((b) => String(b.id) === activeBoardId)
+    if (active?.archived) setArchivedOpen(true)
+  }, [activeBoardId, boards])
 
   function userInitials(): string {
     const email = session?.user.email ?? ''
@@ -51,7 +160,6 @@ export function SidebarNav({
   }
 
   const displayName = session?.user.name?.trim() || session?.user.email || 'Account'
-  const [tasksOpen, setTasksOpen] = useState(true)
   const isDrawer = variant === 'drawer'
   const touch = isDrawer ? 'min-h-[48px] items-center' : ''
 
@@ -126,64 +234,93 @@ export function SidebarNav({
             62
           </span>
         </Link>
-
-        <button
-          type="button"
+        <Link
+          to="/dashboard"
+          onClick={afterNav}
           className={cn(
-            'flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-muted transition hover:bg-surface-2 hover:text-fg',
+            'flex items-center gap-2 rounded-md px-2.5 py-2 text-sm font-medium transition',
             touch,
+            workspacesActive
+              ? 'bg-nav-active/25 text-nav-active-fg ring-1 ring-nav-active/40'
+              : 'text-muted hover:bg-surface-2 hover:text-fg',
           )}
         >
-          <TerminalSquare className="size-4 shrink-0 opacity-80" />
-          Command Center
-        </button>
-        <button
-          type="button"
-          className={cn(
-            'flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-muted transition hover:bg-surface-2 hover:text-fg',
-            touch,
-          )}
-        >
-          <Sparkles className="size-4 shrink-0 opacity-80" />
-          Skills
-        </button>
+          <LayoutGrid className="size-4 shrink-0 opacity-90" />
+          <span className="flex-1 text-left">Workspaces</span>
+        </Link>
 
-        <Collapsible.Root open={tasksOpen} onOpenChange={setTasksOpen} className="pt-3">
-          <div className="flex items-center gap-1 px-1">
-            <Collapsible.Trigger className="flex flex-1 items-center gap-1 rounded px-1 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted hover:text-fg">
-              {tasksOpen ? (
-                <ChevronDown className="size-3.5" />
-              ) : (
-                <ChevronRight className="size-3.5" />
-              )}
-              Tasks
-            </Collapsible.Trigger>
-            <button
-              type="button"
-              className="rounded p-1 text-muted hover:bg-surface-2 hover:text-fg"
-              aria-label="Filter tasks"
-            >
-              <Filter className="size-3.5" />
-            </button>
-          </div>
-          <Collapsible.Content className="mt-1 space-y-0.5 pl-1">
-            <div className="rounded-md px-2 py-1.5 text-xs font-medium text-muted">posthog.com</div>
-            {['Insights backlog', 'Session quality', 'Billing alerts'].map((label, i) => (
-              <button
-                key={label}
-                type="button"
+        {showBoardsSection && workspaceSlug ? (
+          <div className="pt-3">
+            {activeBoards.length > 0 ? (
+              <>
+                <p className="px-1.5 pb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">Boards</p>
+                <div className="space-y-1">
+                  {activeBoards.map((b) => (
+                    <BoardNavCollapsible
+                      key={b.id}
+                      board={b}
+                      workspaceSlug={workspaceSlug}
+                      activeBoardId={activeBoardId}
+                      boardView={boardView}
+                      open={openBoardIds[String(b.id)] ?? false}
+                      onOpenChange={(open) =>
+                        setOpenBoardIds((prev) => ({ ...prev, [String(b.id)]: open }))
+                      }
+                      isDrawer={isDrawer}
+                      afterNav={afterNav}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : null}
+
+            {archivedBoards.length > 0 ? (
+              <div
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-muted transition hover:bg-surface-2 hover:text-fg',
-                  isDrawer && 'min-h-11',
+                  activeBoards.length > 0 ? 'mt-4 border-t border-border pt-3' : 'pt-1',
                 )}
               >
-                <LayoutGrid className="size-3.5 shrink-0 opacity-70" />
-                <span className="flex-1 truncate">{label}</span>
-                <span className="shrink-0 text-[10px] text-muted/80">{4 + i * 5}h</span>
-              </button>
-            ))}
-          </Collapsible.Content>
-        </Collapsible.Root>
+                <Collapsible.Root open={archivedOpen} onOpenChange={setArchivedOpen}>
+                  <Collapsible.Trigger
+                    className={cn(
+                      'flex w-full items-center gap-1 rounded-md px-1.5 py-1.5 text-left text-xs font-medium text-muted transition hover:bg-surface-2 hover:text-fg',
+                      isDrawer && 'min-h-11',
+                    )}
+                  >
+                    {archivedOpen ? (
+                      <ChevronDown className="size-3.5 shrink-0" aria-hidden />
+                    ) : (
+                      <ChevronRight className="size-3.5 shrink-0" aria-hidden />
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-left font-semibold uppercase tracking-wide">
+                      Archived boards
+                    </span>
+                    <span className="rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                      {archivedBoards.length}
+                    </span>
+                  </Collapsible.Trigger>
+                  <Collapsible.Content className="mt-2 space-y-1">
+                    {archivedBoards.map((b) => (
+                      <BoardNavCollapsible
+                        key={b.id}
+                        board={b}
+                        workspaceSlug={workspaceSlug}
+                        activeBoardId={activeBoardId}
+                        boardView={boardView}
+                        open={openBoardIds[String(b.id)] ?? false}
+                        onOpenChange={(open) =>
+                          setOpenBoardIds((prev) => ({ ...prev, [String(b.id)]: open }))
+                        }
+                        isDrawer={isDrawer}
+                        afterNav={afterNav}
+                      />
+                    ))}
+                  </Collapsible.Content>
+                </Collapsible.Root>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </nav>
 
       <div className="mt-auto border-t border-border p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
@@ -252,12 +389,18 @@ export function SidebarNav({
 type SidebarProps = {
   dashboardActive?: boolean
   signalsActive?: boolean
+  workspacesActive?: boolean
+  workspaceSlug?: string
+  workspaceBoards?: WorkspaceBoardNavItem[]
   className?: string
 }
 
 export function Sidebar({
   dashboardActive = false,
   signalsActive = false,
+  workspacesActive = false,
+  workspaceSlug,
+  workspaceBoards,
   className,
 }: SidebarProps) {
   return (
@@ -270,6 +413,9 @@ export function Sidebar({
       <SidebarNav
         dashboardActive={dashboardActive}
         signalsActive={signalsActive}
+        workspacesActive={workspacesActive}
+        workspaceSlug={workspaceSlug}
+        workspaceBoards={workspaceBoards}
         variant="rail"
       />
     </aside>
