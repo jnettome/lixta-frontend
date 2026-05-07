@@ -79,7 +79,12 @@ function BoardLayoutRoute() {
   return (
     <BoardLayoutProvider value={ctxValue}>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-0">
-        <BoardChromeHeader boardTitle={title} onRefresh={refreshBoard} />
+        <BoardChromeHeader
+          boardTitle={title}
+          boardId={boardId}
+          view={view}
+          onRefresh={refreshBoard}
+        />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-1">
           {view === 'list' ? (

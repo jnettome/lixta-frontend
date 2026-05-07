@@ -1,15 +1,17 @@
 import { Link } from '@tanstack/react-router'
-import { Menu, RefreshCw } from 'lucide-react'
+import { Kanban, LayoutList, Menu, RefreshCw } from 'lucide-react'
 
 import { useWorkspaceLayout } from '@/context/WorkspaceLayoutContext'
 import { cn } from '@/lib/utils'
 
 type BoardChromeHeaderProps = {
   boardTitle: string
+  boardId: string
+  view: 'list' | 'kanban'
   onRefresh: () => void | Promise<void>
 }
 
-export function BoardChromeHeader({ boardTitle, onRefresh }: BoardChromeHeaderProps) {
+export function BoardChromeHeader({ boardTitle, boardId, view, onRefresh }: BoardChromeHeaderProps) {
   const { workspaceSlug, openWorkspaceMobileNav } = useWorkspaceLayout()
 
   return (
@@ -50,6 +52,21 @@ export function BoardChromeHeader({ boardTitle, onRefresh }: BoardChromeHeaderPr
       </div>
 
       <div className="flex flex-1 items-center justify-end gap-2 sm:flex-none">
+        <Link
+          to="/workspaces/$workspaceSlug/boards/$boardId"
+          params={{ workspaceSlug, boardId }}
+          search={{ view: view === 'list' ? 'kanban' : 'list' }}
+          className={cn(
+            'inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-1 text-muted transition hover:bg-surface-2 hover:text-fg lg:hidden',
+          )}
+          aria-label={view === 'list' ? 'Switch to kanban view' : 'Switch to list view'}
+        >
+          {view === 'list' ? (
+            <Kanban className="size-4" aria-hidden />
+          ) : (
+            <LayoutList className="size-4" aria-hidden />
+          )}
+        </Link>
         <button
           type="button"
           onClick={() => void onRefresh()}
