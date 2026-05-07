@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "highlight.js/styles/github-dark.css";
 
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
@@ -40,5 +42,15 @@
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
+  }
+}
+
+@layer components {
+  .markdown-body .mention-chip {
+    @apply inline rounded-md bg-surface-3 px-1.5 py-0.5 text-sm text-fg;
+  }
+
+  .markdown-body pre code.hljs {
+    @apply block bg-transparent p-0;
   }
 }

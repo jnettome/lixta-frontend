@@ -130,7 +130,7 @@ export function SidebarNav({
   const navigate = useNavigate()
   const { session, signOut } = useAuth()
 
-  const boards = workspaceBoards ?? []
+  const boards = useMemo(() => workspaceBoards ?? [], [workspaceBoards])
   const activeBoards = useMemo(() => boards.filter((b) => !b.archived), [boards])
   const archivedBoards = useMemo(() => boards.filter((b) => b.archived), [boards])
   const showBoardsSection = Boolean(workspaceSlug && boards.length > 0)
@@ -140,9 +140,12 @@ export function SidebarNav({
 
   useEffect(() => {
     if (!activeBoardId) return
-    setOpenBoardIds((prev) => ({ ...prev, [activeBoardId]: true }))
-    const active = boards.find((b) => String(b.id) === activeBoardId)
-    if (active?.archived) setArchivedOpen(true)
+    const raf = requestAnimationFrame(() => {
+      setOpenBoardIds((prev) => ({ ...prev, [activeBoardId]: true }))
+      const active = boards.find((b) => String(b.id) === activeBoardId)
+      if (active?.archived) setArchivedOpen(true)
+    })
+    return () => cancelAnimationFrame(raf)
   }, [activeBoardId, boards])
 
   function userInitials(): string {

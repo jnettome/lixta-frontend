@@ -18,6 +18,10 @@ import { generateKeyBetween } from 'fractional-indexing'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { KanbanColumn } from '@/components/board/KanbanColumn'
+import {
+  KanbanTaskDialogs,
+  type KanbanDialogState,
+} from '@/components/board/KanbanTaskDialogs'
 import { useBoardLayout } from '@/context/BoardLayoutContext'
 import type { BoardDetail, BoardTask } from '@/services/boards-api'
 import { getBoard, updateTask } from '@/services/boards-api'
@@ -55,6 +59,8 @@ function cloneItems(items: ItemsByColumn): ItemsByColumn {
 
 export function BoardKanban() {
   const { board, setBoard, boardId } = useBoardLayout()
+  const [fullBadges, setFullBadges] = useState(false)
+  const [dialog, setDialog] = useState<KanbanDialogState>(null)
   const columns = useMemo(
     () =>
       [...(board.board_columns ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
@@ -179,18 +185,40 @@ export function BoardKanban() {
   )
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={(e) => void onDragEnd(e)}>
-      <div className="box-border flex h-full min-h-0 gap-3 overflow-x-auto overflow-y-hidden p-0">
-        {columns.map((col) => (
-          <SortableContext
-            key={col.id}
-            items={items[String(col.id)] ?? []}
-            strategy={verticalListSortingStrategy}
+    <>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex shrink-0 items-center justify-end border-b border-border px-2 py-1.5">
+          <button
+            type="button"
+            onClick={() => setFullBadges((v) => !v)}
+            className="rounded-md px-2 py-1 text-[11px] font-medium text-muted transition hover:bg-surface-2 hover:text-fg"
           >
-            <KanbanColumn column={col} taskIds={items[String(col.id)] ?? []} tasksById={tasksById} />
-          </SortableContext>
-        ))}
+            {fullBadges ? 'Compact tags' : 'Full tags'}
+          </button>
+        </div>
+        <div className="min-h-0 min-w-0 flex-1">
+          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={(e) => void onDragEnd(e)}>
+            <div className="box-border flex h-full min-h-0 gap-3 overflow-x-auto overflow-y-hidden p-0 pb-1">
+              {columns.map((col) => (
+                <SortableContext
+                  key={col.id}
+                  items={items[String(col.id)] ?? []}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <KanbanColumn
+                    column={col}
+                    taskIds={items[String(col.id)] ?? []}
+                    tasksById={tasksById}
+                    isFullBadgeDisplay={fullBadges}
+                    onOpenDialog={setDialog}
+                  />
+                </SortableContext>
+              ))}
+            </div>
+          </DndContext>
+        </div>
       </div>
-    </DndContext>
+      <KanbanTaskDialogs state={dialog} onClose={() => setDialog(null)} />
+    </>
   )
 }

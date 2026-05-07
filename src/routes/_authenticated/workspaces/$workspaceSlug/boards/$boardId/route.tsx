@@ -1,4 +1,3 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Outlet, createFileRoute, useRouter, useRouterState } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
@@ -6,12 +5,12 @@ import { z } from 'zod'
 import { BoardChromeHeader } from '@/components/board/BoardChromeHeader'
 import { BoardKanban } from '@/components/board/BoardKanban'
 import { BoardTaskList } from '@/components/board/BoardTaskList'
+import { BoardTaskOverlay } from '@/components/board/BoardTaskOverlay'
 import { BoardLayoutProvider } from '@/context/BoardLayoutContext'
+import { BoardTaskPanelProvider } from '@/context/BoardTaskPanelContext'
 import { useWorkspaceLayout } from '@/context/WorkspaceLayoutContext'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
 import type { BoardDetail } from '@/services/boards-api'
-import { getBoard } from '@/services/boards-api'
-import { cn } from '@/lib/utils'
+import { getBoard, getBoardMembers, getBoardTags } from '@/services/boards-api'
 
 const boardSearchSchema = z.object({
   view: z.enum(['list', 'kanban']).optional(),
@@ -28,7 +27,15 @@ export const Route = createFileRoute('/_authenticated/workspaces/$workspaceSlug/
   validateSearch: (raw): BoardSearch => parseBoardSearch(raw),
   loader: async ({ params }) => {
     const board = await getBoard(params.boardId)
-    return { board }
+    const [tagsResult, membersResult] = await Promise.allSettled([
+      getBoardTags(params.boardId),
+      getBoardMembers(params.boardId),
+    ])
+    return {
+      board,
+      boardTags: tagsResult.status === 'fulfilled' ? tagsResult.value : [],
+      boardMembers: membersResult.status === 'fulfilled' ? membersResult.value : [],
+    }
   },
   component: BoardLayoutRoute,
 })
@@ -55,21 +62,18 @@ function BoardLayoutRoute() {
     workspaceSlug,
     boardId,
     board,
+    boardTags: data.boardTags,
+    boardMembers: data.boardMembers,
     setBoard,
     refreshBoard,
   }
 
   const title = board.name?.trim() || 'Board'
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const isLg = useMediaQuery('(min-width: 1024px)')
-  const reduceMotion = useReducedMotion() ?? false
-  const duration = reduceMotion ? 0 : 0.38
-  const slideX = reduceMotion ? 0 : 22
-  const slideY = reduceMotion ? 0 : 14
 
-  const taskDetailKey = useMemo(() => {
+  const taskId = useMemo(() => {
     const m = /\/tasks\/(\d+)\/?$/.exec(pathname)
-    return m?.[1] ?? 'board-index'
+    return m?.[1]
   }, [pathname])
 
   return (
@@ -77,40 +81,23 @@ function BoardLayoutRoute() {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-0">
         <BoardChromeHeader boardTitle={title} onRefresh={refreshBoard} />
 
-        {view === 'kanban' ? (
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-1">
-            <BoardKanban />
-          </div>
-        ) : (
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col lg:flex-row">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-surface-1">
+          {view === 'list' ? (
             <BoardTaskList />
-            <div
-              className={cn(
-                'relative min-h-0 min-w-0 flex-1 overflow-x-hidden bg-surface-1',
-                'max-lg:min-h-[40vh]',
-              )}
-            >
-              <AnimatePresence mode="sync">
-                <motion.div
-                  key={taskDetailKey}
-                  className="absolute inset-0 flex min-h-0 min-w-0 flex-col overflow-y-auto"
-                  initial={{
-                    opacity: 0,
-                    x: isLg ? slideX : 0,
-                    y: isLg ? 0 : slideY,
-                  }}
-                  animate={{ opacity: 1, x: 0, y: 0 }}
-                  exit={{
-                    opacity: 0,
-                    x: isLg ? slideX * 0.5 : 0,
-                    y: isLg ? 0 : slideY * 0.5,
-                  }}
-                  transition={{ duration, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  <Outlet />
-                </motion.div>
-              </AnimatePresence>
+          ) : (
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+              <BoardKanban />
             </div>
+          )}
+        </div>
+
+        {taskId ? (
+          <BoardTaskPanelProvider key={taskId}>
+            <BoardTaskOverlay workspaceSlug={workspaceSlug} boardId={boardId} view={view} />
+          </BoardTaskPanelProvider>
+        ) : (
+          <div className="sr-only" aria-hidden>
+            <Outlet />
           </div>
         )}
       </div>

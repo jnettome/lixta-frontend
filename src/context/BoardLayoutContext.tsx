@@ -1,11 +1,13 @@
 import { createContext, useContext, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 
-import type { BoardDetail } from '@/services/boards-api'
+import type { BoardDetail, BoardMember, BoardTag } from '@/services/boards-api'
 
 export type BoardLayoutOutletContextValue = {
   workspaceSlug: string
   boardId: string
   board: BoardDetail
+  boardTags: BoardTag[]
+  boardMembers: BoardMember[]
   setBoard: Dispatch<SetStateAction<BoardDetail>>
   refreshBoard: () => Promise<void>
 }
