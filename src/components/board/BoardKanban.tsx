@@ -1,6 +1,8 @@
 import {
   type DragEndEvent,
+  type DragStartEvent,
   DndContext,
+  DragOverlay,
   type UniqueIdentifier,
   closestCorners,
   KeyboardSensor,
@@ -25,6 +27,7 @@ import {
 import { useBoardLayout } from '@/context/BoardLayoutContext'
 import type { BoardDetail, BoardTask } from '@/services/boards-api'
 import { getBoard, updateTask } from '@/services/boards-api'
+import { cn } from '@/lib/utils'
 
 type ItemsByColumn = Record<string, string[]>
 
@@ -57,10 +60,59 @@ function cloneItems(items: ItemsByColumn): ItemsByColumn {
   return Object.fromEntries(Object.entries(items).map(([k, v]) => [k, [...v]]))
 }
 
+/** Floating preview above columns while dragging (avoids clipping / wrong z-order). */
+function KanbanDragPreview({ task }: { task: BoardTask }) {
+  const tags = task.tags ?? []
+  return (
+    <div
+      className={cn(
+        'w-[min(18rem,calc(100vw-3rem))] cursor-grabbing rounded-xl border border-border bg-surface-2 p-2.5 shadow-2xl',
+        'ring-2 ring-nav-active/30',
+      )}
+    >
+      {tags.length > 0 ? (
+        <div className="mb-1.5 flex max-h-5 flex-wrap gap-1 overflow-hidden">
+          {tags.map((tag) => (
+            <span
+              key={tag.id}
+              className="inline-flex max-w-full truncate rounded-md border px-1.5 py-0.5 text-[10px] font-medium"
+              style={
+                tag.color
+                  ? {
+                      borderColor: `${tag.color}99`,
+                      backgroundColor: `${tag.color}33`,
+                      color: 'var(--color-fg)',
+                    }
+                  : { borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface-3)' }
+              }
+            >
+              {tag.name.slice(0, 1).toUpperCase()}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <p className="text-sm font-medium leading-snug text-fg">
+        {(task.name ?? '').trim() || 'Untitled'}
+      </p>
+    </div>
+  )
+}
+
 export function BoardKanban() {
   const { board, setBoard, boardId } = useBoardLayout()
-  const [fullBadges, setFullBadges] = useState(false)
   const [dialog, setDialog] = useState<KanbanDialogState>(null)
+  const [activeDragId, setActiveDragId] = useState<string | null>(null)
+  const [expandedTagTaskIds, setExpandedTagTaskIds] = useState<Set<string>>(() => new Set())
+
+  const toggleTagExpand = useCallback((taskId: string) => {
+    setExpandedTagTaskIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(taskId)) next.delete(taskId)
+      else next.add(taskId)
+      return next
+    })
+  }, [])
+
   const columns = useMemo(
     () =>
       [...(board.board_columns ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
@@ -83,6 +135,8 @@ export function BoardKanban() {
     }
     return m
   }, [board.board_columns])
+
+  const activeDragTask = activeDragId ? tasksById.get(activeDragId) ?? null : null
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -112,6 +166,7 @@ export function BoardKanban() {
 
   const onDragEnd = useCallback(
     async (event: DragEndEvent) => {
+      setActiveDragId(null)
       const { active, over } = event
       if (!over || active.id === over.id) return
 
@@ -184,20 +239,25 @@ export function BoardKanban() {
     [boardId, items, rebuildBoardFromItems, setBoard, tasksById],
   )
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveDragId(String(event.active.id))
+  }, [])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveDragId(null)
+  }, [])
+
   return (
     <>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="flex shrink-0 items-center justify-end border-b border-border px-2 py-1.5">
-          <button
-            type="button"
-            onClick={() => setFullBadges((v) => !v)}
-            className="rounded-md px-2 py-1 text-[11px] font-medium text-muted transition hover:bg-surface-2 hover:text-fg"
-          >
-            {fullBadges ? 'Compact tags' : 'Full tags'}
-          </button>
-        </div>
         <div className="min-h-0 min-w-0 flex-1">
-          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={(e) => void onDragEnd(e)}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragCancel={handleDragCancel}
+            onDragEnd={(e) => void onDragEnd(e)}
+          >
             <div className="box-border flex h-full min-h-0 gap-3 overflow-x-auto overflow-y-hidden p-0 pb-1">
               {columns.map((col) => (
                 <SortableContext
@@ -209,12 +269,19 @@ export function BoardKanban() {
                     column={col}
                     taskIds={items[String(col.id)] ?? []}
                     tasksById={tasksById}
-                    isFullBadgeDisplay={fullBadges}
+                    expandedTagTaskIds={expandedTagTaskIds}
+                    onToggleTagExpand={toggleTagExpand}
                     onOpenDialog={setDialog}
                   />
                 </SortableContext>
               ))}
             </div>
+            <DragOverlay
+              className="z-[1000]"
+              dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
+            >
+              {activeDragTask ? <KanbanDragPreview task={activeDragTask} /> : null}
+            </DragOverlay>
           </DndContext>
         </div>
       </div>

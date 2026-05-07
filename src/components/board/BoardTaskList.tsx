@@ -109,7 +109,12 @@ export function BoardTaskList() {
                 align="end"
               >
                 <DropdownMenu.Item
-                  className="cursor-pointer rounded-md px-3 py-2 text-sm text-fg outline-none data-[highlighted]:bg-surface-2"
+                  className={cn(
+                    'cursor-pointer rounded-md px-3 py-2 text-sm outline-none data-[highlighted]:bg-surface-2',
+                    !filterActive
+                      ? 'bg-nav-active/15 font-medium text-fg'
+                      : 'text-muted',
+                  )}
                   onSelect={(e) => {
                     e.preventDefault()
                     showAllColumns()
@@ -123,7 +128,11 @@ export function BoardTaskList() {
                   return (
                     <DropdownMenu.CheckboxItem
                       key={col.id}
-                      className="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-fg outline-none data-[highlighted]:bg-surface-2"
+                      className={cn(
+                        'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm outline-none data-[highlighted]:bg-surface-3',
+                        'data-[state=checked]:bg-nav-active/18 data-[state=checked]:font-medium data-[state=checked]:text-fg',
+                        'data-[state=unchecked]:text-muted data-[state=unchecked]:opacity-90',
+                      )}
                       checked={visible}
                       onSelect={(e) => e.preventDefault()}
                       onCheckedChange={() => toggleColumnVisibility(col.id)}

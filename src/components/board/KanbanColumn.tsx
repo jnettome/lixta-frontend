@@ -10,13 +10,15 @@ import type { KanbanDialogState } from '@/components/board/KanbanTaskDialogs'
 import { useBoardLayout } from '@/context/BoardLayoutContext'
 import type { BoardColumn, BoardTask } from '@/services/boards-api'
 import { toggleTaskStopwatch } from '@/services/boards-api'
+import { formatBoardDueAt } from '@/lib/board-ui'
 import { cn } from '@/lib/utils'
 
 type KanbanColumnProps = {
   column: BoardColumn
   taskIds: string[]
   tasksById: Map<string, BoardTask>
-  isFullBadgeDisplay: boolean
+  expandedTagTaskIds: Set<string>
+  onToggleTagExpand: (taskId: string) => void
   onOpenDialog: (state: KanbanDialogState) => void
 }
 
@@ -117,7 +119,8 @@ export function KanbanColumn({
   column,
   taskIds,
   tasksById,
-  isFullBadgeDisplay,
+  expandedTagTaskIds,
+  onToggleTagExpand,
   onOpenDialog,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
@@ -159,7 +162,8 @@ export function KanbanColumn({
             <KanbanTaskCard
               key={id}
               task={task}
-              isFullBadgeDisplay={isFullBadgeDisplay}
+              tagsExpanded={expandedTagTaskIds.has(String(task.id))}
+              onToggleTagExpand={() => onToggleTagExpand(String(task.id))}
               onOpenDialog={onOpenDialog}
             />
           )
@@ -201,11 +205,13 @@ function KanbanSectionCard({ task }: { task: BoardTask }) {
 
 function KanbanTaskCard({
   task,
-  isFullBadgeDisplay,
+  tagsExpanded,
+  onToggleTagExpand,
   onOpenDialog,
 }: {
   task: BoardTask
-  isFullBadgeDisplay: boolean
+  tagsExpanded: boolean
+  onToggleTagExpand: () => void
   onOpenDialog: (state: KanbanDialogState) => void
 }) {
   const {
@@ -225,12 +231,13 @@ function KanbanTaskCard({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.55 : 1,
+    opacity: isDragging ? 0.35 : 1,
   }
 
   const tags = task.tags ?? []
   const users = task.task_users ?? []
   const ratio = checklistRatio(task)
+  const dueLine = formatBoardDueAt(task.due_at ?? null)
 
   return (
     <li ref={setNodeRef} style={style} {...attributes} className="group relative list-none">
@@ -245,7 +252,20 @@ function KanbanTaskCard({
         </button>
         <div className="min-w-0 flex-1 py-1">
           {tags.length > 0 ? (
-            <div className={cn('mb-1.5 flex flex-wrap gap-1', !isFullBadgeDisplay && 'max-h-5 overflow-hidden')}>
+            <button
+              type="button"
+              className={cn(
+                'mb-1.5 flex w-full flex-wrap gap-1 rounded-md text-left outline-none ring-nav-active/40 focus-visible:ring-2',
+                !tagsExpanded && 'max-h-5 overflow-hidden',
+              )}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onToggleTagExpand()
+              }}
+              aria-expanded={tagsExpanded}
+              aria-label={tagsExpanded ? 'Show compact tags' : 'Show full tag names'}
+            >
               {tags.map((tag) => (
                 <span
                   key={tag.id}
@@ -262,10 +282,10 @@ function KanbanTaskCard({
                       : { borderColor: 'var(--color-border)', backgroundColor: 'var(--color-surface-3)' }
                   }
                 >
-                  {isFullBadgeDisplay ? tag.name : tag.name.slice(0, 1).toUpperCase()}
+                  {tagsExpanded ? tag.name : tag.name.slice(0, 1).toUpperCase()}
                 </span>
               ))}
-            </div>
+            </button>
           ) : null}
           <Link
             to="/workspaces/$workspaceSlug/boards/$boardId/tasks/$taskId"
@@ -278,8 +298,8 @@ function KanbanTaskCard({
             </p>
           </Link>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-            {task.due_at ? (
-              <p className="text-[10px] text-muted">Due {task.due_at}</p>
+            {dueLine ? (
+              <p className="text-[10px] text-muted">Due {dueLine}</p>
             ) : null}
             <KanbanStopwatchChipFixed
               task={task}

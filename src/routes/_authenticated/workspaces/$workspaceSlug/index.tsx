@@ -9,6 +9,7 @@ import { createBoard } from '@/services/boards-api'
 import { updateWorkspace } from '@/services/workspaces-api'
 import { WorkspaceActivityColumnSkeleton } from '@/components/ui/Skeleton'
 import { useWorkspaceLayout } from '@/context/WorkspaceLayoutContext'
+import { cn } from '@/lib/utils'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 const ACTIVITY_TYPE_FILTERS = [
@@ -400,7 +401,11 @@ function WorkspaceOverviewPage() {
                       <DropdownMenu.RadioItem
                         key={d}
                         value={String(d)}
-                        className="relative flex cursor-pointer select-none items-center rounded px-2 py-1.5 text-xs text-fg outline-none hover:bg-surface-3 focus:bg-surface-3 data-[state=checked]:font-semibold"
+                        className={cn(
+                          'relative flex cursor-pointer select-none items-center rounded px-2 py-1.5 text-xs outline-none hover:bg-surface-3 focus:bg-surface-3',
+                          'data-[state=checked]:bg-nav-active/20 data-[state=checked]:font-semibold data-[state=checked]:text-nav-active-fg',
+                          'data-[state=unchecked]:text-muted',
+                        )}
                       >
                         Last {d} days
                       </DropdownMenu.RadioItem>
@@ -416,7 +421,11 @@ function WorkspaceOverviewPage() {
                       key={opt.value}
                       checked={activityTypeFilter.includes(opt.value)}
                       onCheckedChange={() => toggleActivityType(opt.value)}
-                      className="relative flex cursor-pointer select-none items-center gap-2 rounded px-2 py-1.5 text-xs text-fg outline-none hover:bg-surface-3 focus:bg-surface-3"
+                      className={cn(
+                        'relative flex cursor-pointer select-none items-center gap-2 rounded px-2 py-1.5 text-xs outline-none hover:bg-surface-3 focus:bg-surface-3',
+                        'data-[state=checked]:bg-nav-active/18 data-[state=checked]:font-medium data-[state=checked]:text-fg',
+                        'data-[state=unchecked]:text-muted data-[state=unchecked]:opacity-90',
+                      )}
                       onSelect={(e) => e.preventDefault()}
                     >
                       {opt.label}
