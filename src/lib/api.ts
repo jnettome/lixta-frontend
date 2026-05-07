@@ -61,7 +61,10 @@ export async function apiRequest<T>(
     }
   }
 
-  if (res.status === 401 && !skipUnauthorizedClear) {
+  // Only treat 401 as "session invalid" when we actually sent a Bearer token.
+  // Otherwise a stray unauthenticated request could clear a valid session (e.g. race after login).
+  const hadAuth = Boolean(authToken)
+  if (res.status === 401 && !skipUnauthorizedClear && hadAuth) {
     clearAuthSession()
     if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
       window.location.assign('/login')

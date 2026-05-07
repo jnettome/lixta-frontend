@@ -66,7 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const refreshUser = useCallback(async () => {
-    const user = await getMe()
+    const t = getSessionSnapshot()?.token
+    if (!t) return
+    const user = await getMe(t)
     updateStoredUser(user)
   }, [])
 

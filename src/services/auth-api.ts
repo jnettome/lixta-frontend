@@ -53,9 +53,13 @@ export async function loginRequest(email: string, otp: string): Promise<LoginSuc
   }
 }
 
-export async function getMe(token?: string): Promise<ApiUser> {
+export async function getMe(
+  token?: string,
+  options?: { skipUnauthorizedClear?: boolean },
+): Promise<ApiUser> {
   const raw = await apiRequest<unknown>('/me', {
     token: token ?? undefined,
+    skipUnauthorizedClear: options?.skipUnauthorizedClear,
   })
   const parsed = apiUserSchema.safeParse(raw)
   if (!parsed.success) {

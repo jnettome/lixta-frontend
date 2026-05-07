@@ -21,8 +21,11 @@ const workspaceSchema = z
 
 export type Workspace = z.infer<typeof workspaceSchema>
 
-export async function listWorkspaces(): Promise<Workspace[]> {
-  const raw = await apiRequest<unknown>('/workspaces')
+/** When `token` is passed, that JWT is used; otherwise reads from the stored session. */
+export async function listWorkspaces(token?: string): Promise<Workspace[]> {
+  const raw = await apiRequest<unknown>('/workspaces', {
+    ...(token !== undefined ? { token } : {}),
+  })
   const parsed = z.array(workspaceSchema).safeParse(raw)
   if (!parsed.success) {
     throw new Error('Invalid workspaces response')

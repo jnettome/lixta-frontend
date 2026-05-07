@@ -3,8 +3,10 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { LayoutDashboard, Plus, Radio, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/auth/AuthContext'
+import { getSession, updateStoredUser } from '@/auth/session'
 import { WorkspaceListSkeleton } from '@/components/ui/Skeleton'
 import { cn } from '@/lib/utils'
+import { getMe } from '@/services/auth-api'
 import { createWorkspace, listWorkspaces, type Workspace } from '@/services/workspaces-api'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
@@ -20,7 +22,7 @@ function greetingLabel(): string {
 
 function DashboardPage() {
   const navigate = useNavigate()
-  const { session, refreshUser, signOut } = useAuth()
+  const { session, signOut } = useAuth()
   const user = session?.user
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,8 +34,10 @@ function DashboardPage() {
   const [toast, setToast] = useState<string | null>(null)
 
   const reloadWorkspaces = useCallback(async () => {
+    const t = getSession()?.token
+    if (!t) return
     try {
-      const list = await listWorkspaces()
+      const list = await listWorkspaces(t)
       setWorkspaces(list)
       setLoadError(null)
     } catch (e) {
@@ -44,11 +48,22 @@ function DashboardPage() {
   useEffect(() => {
     let cancelled = false
     void (async () => {
+      const snap = getSession()
+      const token = snap?.token
+      if (!token) {
+        if (!cancelled) setLoading(false)
+        return
+      }
       try {
-        const [, list] = await Promise.all([
-          refreshUser().catch(() => {}),
-          listWorkspaces(),
-        ])
+        // Serialize: same JWT for profile refresh and workspace list (avoids parallel 401 edge cases).
+        try {
+          const user = await getMe(token, { skipUnauthorizedClear: true })
+          if (!cancelled) updateStoredUser(user)
+        } catch {
+          /* ignore profile refresh failure; workspace list still runs */
+        }
+        if (cancelled) return
+        const list = await listWorkspaces(token)
         if (!cancelled) {
           setWorkspaces(list)
           setLoadError(null)
@@ -64,7 +79,7 @@ function DashboardPage() {
     return () => {
       cancelled = true
     }
-  }, [refreshUser])
+  }, [])
 
   async function onCreateWorkspace(e: React.FormEvent) {
     e.preventDefault()
